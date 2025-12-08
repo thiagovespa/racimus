@@ -20,7 +20,6 @@ export const metadata: Metadata = {
   title: "Racimus - RACI Matrix Management",
   description:
     "Crie e gerencie matrizes RACI para seus projetos. Defina responsabilidades de forma clara e eficiente com nossa ferramenta intuitiva.",
-  generator: "v0.app",
   keywords: [
     "RACI",
     "matriz",
@@ -77,6 +76,7 @@ export const metadata: Metadata = {
     icon: "/icon.svg",
     apple: "/apple-touch-icon.jpg",
   },
+    generator: 'v0.app'
 }
 
 export default function RootLayout({
