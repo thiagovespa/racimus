@@ -9,6 +9,7 @@ import { useI18n } from "@/lib/i18n/context"
 import { useMatrix } from "@/lib/store/matrix-store"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Flame, Grid3X3, Edit, ArrowLeft, AlertTriangle, Presentation } from "lucide-react"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
@@ -19,6 +20,13 @@ const raciColors = {
   A: "bg-raci-a text-white",
   C: "bg-raci-c text-white",
   I: "bg-raci-i text-white",
+}
+
+const raciInlineColors = {
+  R: { bg: "oklch(0.577 0.245 27.325)", text: "white" },
+  A: { bg: "oklch(0.55 0.16 85)", text: "black" },
+  C: { bg: "oklch(0.65 0.19 220)", text: "white" },
+  I: { bg: "oklch(0.627 0.194 149.214)", text: "white" },
 }
 
 const raciDescriptions = {
@@ -72,31 +80,21 @@ export default function MatrixPage() {
     return "bg-green-500/20"
   }
 
-  const toggleCell = (taskId: string, personId: string) => {
+  const toggleRole = (taskId: string, personId: string, role: string) => {
     if (!currentMatrix) return
-
-    const assignment = currentMatrix.assignments.find((a) => a.taskId === taskId)
-    if (!assignment) return
-
-    const currentType = ["R", "A", "C", "I"].find((type) =>
-      assignment[type as keyof typeof assignment]?.includes?.(personId),
-    )
-
-    const nextTypes: Record<string, string | null> = { R: "A", A: "C", C: "I", I: null }
-    const nextType = currentType ? nextTypes[currentType] : "R"
 
     const newAssignments = currentMatrix.assignments.map((a) => {
       if (a.taskId !== taskId) return a
 
       const updated = { ...a }
-      ;["R", "A", "C", "I"].forEach((type) => {
-        updated[type as keyof typeof updated] = (a[type as keyof typeof a] as string[]).filter(
-          (id: string) => id !== personId,
-        )
-      })
+      const currentList = (a[role as keyof typeof a] as string[]) || []
 
-      if (nextType) {
-        ;(updated[nextType as keyof typeof updated] as string[]).push(personId)
+      if (currentList.includes(personId)) {
+        // Remove person from this role
+        updated[role as keyof typeof updated] = currentList.filter((id: string) => id !== personId)
+      } else {
+        // Add person to this role
+        updated[role as keyof typeof updated] = [...currentList, personId]
       }
 
       return updated
@@ -105,23 +103,16 @@ export default function MatrixPage() {
     updateMatrix({ ...currentMatrix, assignments: newAssignments })
   }
 
-  const getCellValue = (taskId: string, personId: string) => {
+  const getCellRoles = (taskId: string, personId: string): string[] => {
     const assignment = currentMatrix?.assignments.find((a) => a.taskId === taskId)
-    if (!assignment) return null
+    if (!assignment) return []
 
-    if (assignment.R?.includes(personId)) return "R"
-    if (assignment.A?.includes(personId)) return "A"
-    if (assignment.C?.includes(personId)) return "C"
-    if (assignment.I?.includes(personId)) return "I"
-    return null
-  }
-
-  const getTaskName = (taskId: string) => {
-    return currentMatrix?.tasks.find((t) => t.id === taskId)?.name || taskId
-  }
-
-  const getPersonName = (personId: string) => {
-    return currentMatrix?.people.find((p) => p.id === personId)?.name || personId
+    const roles: string[] = []
+    if (assignment.R?.includes(personId)) roles.push("R")
+    if (assignment.A?.includes(personId)) roles.push("A")
+    if (assignment.C?.includes(personId)) roles.push("C")
+    if (assignment.I?.includes(personId)) roles.push("I")
+    return roles
   }
 
   if (!currentMatrix) {
@@ -282,28 +273,68 @@ export default function MatrixPage() {
                     {task.name}
                   </th>
                   {currentMatrix.people.map((person) => {
-                    const value = getCellValue(task.id, person.id)
-                    const cellDescription = value
-                      ? `${task.name}, ${person.name}: ${raciDescriptions[value]} (${t.matrix[value === "R" ? "responsible" : value === "A" ? "accountable" : value === "C" ? "consulted" : "informed"]})`
-                      : `${task.name}, ${person.name}: ${t.accessibility?.noAssignment || "No assignment"}`
+                    const roles = getCellRoles(task.id, person.id)
+                    const cellDescription =
+                      roles.length > 0
+                        ? `${task.name}, ${person.name}: ${roles.map((r) => raciDescriptions[r as keyof typeof raciDescriptions]).join(", ")}`
+                        : `${task.name}, ${person.name}: ${t.accessibility?.noAssignment || "No assignment"}`
 
                     return (
                       <td
                         key={person.id}
                         className={cn("p-4 text-center transition-colors", heatMode && getHeatColor(person.id))}
                       >
-                        <button
-                          onClick={() => toggleCell(task.id, person.id)}
-                          className={cn(
-                            "w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
-                            value ? raciColors[value] : "bg-secondary hover:bg-accent text-muted-foreground",
-                          )}
-                          aria-label={cellDescription}
-                          aria-describedby="raci-instructions"
-                          title={cellDescription}
-                        >
-                          {value || "-"}
-                        </button>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <button
+                              className={cn(
+                                "min-w-10 h-10 px-1 rounded-lg flex items-center justify-center gap-0.5 text-sm font-bold transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
+                                roles.length === 0 && "bg-secondary hover:bg-accent text-muted-foreground w-10",
+                              )}
+                              aria-label={cellDescription}
+                              title={cellDescription}
+                            >
+                              {roles.length === 0
+                                ? "-"
+                                : roles.map((role) => (
+                                    <span
+                                      key={role}
+                                      className="w-6 h-6 rounded flex items-center justify-center text-xs font-bold"
+                                      style={{
+                                        backgroundColor: raciInlineColors[role as keyof typeof raciInlineColors].bg,
+                                        color: raciInlineColors[role as keyof typeof raciInlineColors].text,
+                                      }}
+                                    >
+                                      {role}
+                                    </span>
+                                  ))}
+                            </button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-2" align="center">
+                            <div className="flex gap-1">
+                              {(["R", "A", "C", "I"] as const).map((role) => {
+                                const isSelected = roles.includes(role)
+                                return (
+                                  <button
+                                    key={role}
+                                    onClick={() => toggleRole(task.id, person.id, role)}
+                                    className={cn(
+                                      "w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold transition-all border-2",
+                                      isSelected ? "border-primary" : "border-transparent",
+                                    )}
+                                    style={{
+                                      backgroundColor: isSelected ? raciInlineColors[role].bg : "var(--secondary)",
+                                      color: isSelected ? raciInlineColors[role].text : "var(--muted-foreground)",
+                                    }}
+                                    title={`${raciDescriptions[role]} - ${t.matrix[role === "R" ? "responsible" : role === "A" ? "accountable" : role === "C" ? "consulted" : "informed"]}`}
+                                  >
+                                    {role}
+                                  </button>
+                                )
+                              })}
+                            </div>
+                          </PopoverContent>
+                        </Popover>
                       </td>
                     )
                   })}
@@ -312,7 +343,7 @@ export default function MatrixPage() {
             </tbody>
           </table>
           <p id="raci-instructions" className="sr-only">
-            {t.accessibility?.clickToChange || "Click to cycle through R, A, C, I, or empty"}
+            {t.accessibility?.clickToChange || "Click to select multiple RACI assignments"}
           </p>
         </CardContent>
       </Card>

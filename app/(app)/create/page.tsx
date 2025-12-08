@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { Header } from "@/components/header"
 import { useI18n } from "@/lib/i18n/context"
-import { useMatrix, type Person, type Task, type RACIAssignment } from "@/lib/store/matrix-store"
+import { useMatrix } from "@/lib/store/matrix-store"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -49,10 +49,9 @@ export default function CreateMatrixPage() {
   const [step, setStep] = useState(1)
   const [description, setDescription] = useState("")
   const [title, setTitle] = useState("")
-  const [tasks, setTasks] = useState<Task[]>([{ id: "1", name: "" }])
-  const [people, setPeople] = useState<Person[]>([{ id: "1", name: "", role: "" }])
-  const [assignments, setAssignments] = useState<Record<string, Record<string, string>>>({})
-
+  const [tasks, setTasks] = useState<{ id: string; name: string }[]>([{ id: "1", name: "" }])
+  const [people, setPeople] = useState<{ id: string; name: string; role: string }[]>([{ id: "1", name: "", role: "" }])
+  const [assignments, setAssignments] = useState<Record<string, Record<string, string[]>>>({})
   const [contactName, setContactName] = useState("")
   const [contactEmail, setContactEmail] = useState("")
   const [contactPhone, setContactPhone] = useState("")
@@ -115,25 +114,35 @@ export default function CreateMatrixPage() {
   }
 
   const setAssignment = (taskId: string, personId: string, role: string) => {
-    const currentRole = assignments[taskId]?.[personId]
-    if (currentRole === role) {
-      const newAssignments = { ...assignments }
-      if (newAssignments[taskId]) {
-        delete newAssignments[taskId][personId]
-        if (Object.keys(newAssignments[taskId]).length === 0) {
-          delete newAssignments[taskId]
-        }
+    setAssignments((prev) => {
+      const taskAssignments = prev[taskId] || {}
+      const currentRoles = taskAssignments[personId] || []
+
+      let newRoles: string[]
+      if (currentRoles.includes(role)) {
+        // Remove role if already selected
+        newRoles = currentRoles.filter((r) => r !== role)
+      } else {
+        // Add role to existing roles
+        newRoles = [...currentRoles, role]
       }
-      setAssignments(newAssignments)
-    } else {
-      setAssignments({
-        ...assignments,
-        [taskId]: {
-          ...(assignments[taskId] || {}),
-          [personId]: role,
-        },
-      })
-    }
+
+      const newTaskAssignments = { ...taskAssignments }
+      if (newRoles.length === 0) {
+        delete newTaskAssignments[personId]
+      } else {
+        newTaskAssignments[personId] = newRoles
+      }
+
+      const newAssignments = { ...prev }
+      if (Object.keys(newTaskAssignments).length === 0) {
+        delete newAssignments[taskId]
+      } else {
+        newAssignments[taskId] = newTaskAssignments
+      }
+
+      return newAssignments
+    })
   }
 
   const nextStep = () => {
@@ -161,7 +170,7 @@ export default function CreateMatrixPage() {
   const finishWizard = async (skip = false) => {
     const matrixTitle = title.slice(0, 50) || "New Matrix"
 
-    if (!skip && contactName && contactEmail && validateName(contactName) && validateEmail(contactEmail)) {
+    if (!skip && validateName(contactName) && validateEmail(contactEmail)) {
       try {
         let clientIp = ""
         try {
@@ -188,38 +197,46 @@ export default function CreateMatrixPage() {
       }
     }
 
-    const newMatrix = {
+    const formattedAssignments = validTasks.map((task) => {
+      const taskAssignments = assignments[task.id] || {}
+      const result: { taskId: string; R: string[]; A: string[]; C: string[]; I: string[] } = {
+        taskId: task.id,
+        R: [],
+        A: [],
+        C: [],
+        I: [],
+      }
+
+      Object.entries(taskAssignments).forEach(([personId, roles]) => {
+        if (Array.isArray(roles)) {
+          roles.forEach((role) => {
+            if (role === "R" || role === "A" || role === "C" || role === "I") {
+              result[role].push(personId)
+            }
+          })
+        }
+      })
+
+      return result
+    })
+
+    const matrix = {
       id: Date.now().toString(),
       title: matrixTitle,
       description,
       createdAt: new Date(),
       tasks: validTasks,
       people: validPeople,
-      assignments: validTasks.map((task) => {
-        const taskAssignments = assignments[task.id] || {}
-        const result: RACIAssignment = {
-          taskId: task.id,
-          R: [],
-          A: [],
-          C: [],
-          I: [],
-        }
-        Object.entries(taskAssignments).forEach(([personId, role]) => {
-          if (role === "R") result.R.push(personId)
-          else if (role === "A") result.A.push(personId)
-          else if (role === "C") result.C.push(personId)
-          else if (role === "I") result.I.push(personId)
-        })
-        return result
-      }),
+      assignments: formattedAssignments,
     }
-    addMatrix(newMatrix)
-    setCurrentMatrix(newMatrix)
+
+    addMatrix(matrix)
+    setCurrentMatrix(matrix)
     router.push("/matrix")
   }
 
   const handleImportTasks = (importedTasks: string[]) => {
-    const newTasks: Task[] = importedTasks.map((name, index) => ({
+    const newTasks: { id: string; name: string }[] = importedTasks.map((name, index) => ({
       id: `imported-${Date.now()}-${index}`,
       name,
     }))
@@ -228,7 +245,7 @@ export default function CreateMatrixPage() {
   }
 
   const handleImportPeople = (importedPeople: { name: string; role: string }[]) => {
-    const newPeople: Person[] = importedPeople.map((p, index) => ({
+    const newPeople: { id: string; name: string; role: string }[] = importedPeople.map((p, index) => ({
       id: `imported-${Date.now()}-${index}`,
       name: p.name,
       role: p.role,
@@ -356,7 +373,7 @@ export default function CreateMatrixPage() {
                       onKeyDown={(e) => {
                         if (e.key === "Enter" && task.name.trim()) {
                           e.preventDefault()
-                          const newTask: Task = { id: Date.now().toString(), name: "" }
+                          const newTask: { id: string; name: string } = { id: Date.now().toString(), name: "" }
                           setTasks([...tasks, newTask])
                           setTimeout(() => {
                             const inputs = document.querySelectorAll(
@@ -422,7 +439,11 @@ export default function CreateMatrixPage() {
                           onKeyDown={(e) => {
                             if (e.key === "Enter" && person.name.trim()) {
                               e.preventDefault()
-                              const newPerson: Person = { id: Date.now().toString(), name: "", role: "" }
+                              const newPerson: { id: string; name: string; role: string } = {
+                                id: Date.now().toString(),
+                                name: "",
+                                role: "",
+                              }
                               setPeople([...people, newPerson])
                               setTimeout(() => {
                                 const inputs = document.querySelectorAll("input[placeholder]")
@@ -524,7 +545,8 @@ export default function CreateMatrixPage() {
                       </div>
                       <div className="flex gap-2">
                         {(["R", "A", "C", "I"] as const).map((role) => {
-                          const isSelected = assignments[validTasks[currentTaskIndex].id]?.[person.id] === role
+                          const selectedRoles = assignments[validTasks[currentTaskIndex].id]?.[person.id] || []
+                          const isSelected = Array.isArray(selectedRoles) && selectedRoles.includes(role)
                           const raciColors = {
                             R: { bg: "oklch(0.577 0.245 27.325)", border: "oklch(0.577 0.245 27.325)" },
                             A: { bg: "oklch(0.55 0.16 85)", border: "oklch(0.55 0.16 85)" },
