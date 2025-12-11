@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 import { I18nProvider } from "@/lib/i18n/context"
 import { MatrixProvider } from "@/lib/store/matrix-store"
+import { ThemeProvider } from "@/lib/theme/context"
 
 import { Inter, JetBrains_Mono, Roboto as V0_Font_Roboto, Roboto_Mono as V0_Font_Roboto_Mono, Noto_Serif as V0_Font_Noto_Serif } from 'next/font/google'
 
@@ -17,9 +18,9 @@ const inter = Inter({ subsets: ["latin"] })
 const _jetbrainsMono = JetBrains_Mono({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Racimus - RACI Matrix Management",
+  title: "Racimus - RACI Matrix Management | Vesparium",
   description:
-    "Crie e gerencie matrizes RACI para seus projetos. Defina responsabilidades de forma clara e eficiente com nossa ferramenta intuitiva.",
+    "Crie e gerencie matrizes RACI para seus projetos. Defina responsabilidades de forma clara e eficiente com nossa ferramenta intuitiva. Um produto Vesparium.",
   keywords: [
     "RACI",
     "matriz",
@@ -29,20 +30,22 @@ export const metadata: Metadata = {
     "consulted",
     "informed",
     "responsible",
+    "Vesparium",
+    "Racimus",
   ],
-  authors: [{ name: "Racimus" }],
-  creator: "Racimus",
-  publisher: "Racimus",
-  metadataBase: new URL("https://racimus.vercel.app"),
+  authors: [{ name: "Vesparium" }],
+  creator: "Vesparium",
+  publisher: "Vesparium",
+  metadataBase: new URL("https://racim.us"),
   alternates: {
     canonical: "/",
   },
   openGraph: {
     type: "website",
     locale: "pt_BR",
-    url: "https://racimus.vercel.app",
+    url: "https://racim.us",
     siteName: "Racimus",
-    title: "Racimus - Gestão de Matrizes RACI",
+    title: "Racimus - Gestão de Matrizes RACI | Vesparium",
     description:
       "Crie e gerencie matrizes RACI para seus projetos. Defina responsabilidades de forma clara e eficiente com nossa ferramenta intuitiva.",
     images: [
@@ -50,13 +53,13 @@ export const metadata: Metadata = {
         url: "/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "Racimus - RACI Matrix Management",
+        alt: "Racimus - RACI Matrix Management by Vesparium",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Racimus - Gestão de Matrizes RACI",
+    title: "Racimus - Gestão de Matrizes RACI | Vesparium",
     description:
       "Crie e gerencie matrizes RACI para seus projetos. Defina responsabilidades de forma clara e eficiente.",
     images: ["/og-image.jpg"],
@@ -85,11 +88,13 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className="dark" suppressHydrationWarning>
       <body className={`font-sans antialiased ${inter.className}`}>
-        <I18nProvider>
-          <MatrixProvider>{children}</MatrixProvider>
-        </I18nProvider>
+        <ThemeProvider>
+          <I18nProvider>
+            <MatrixProvider>{children}</MatrixProvider>
+          </I18nProvider>
+        </ThemeProvider>
         <Analytics />
       </body>
     </html>

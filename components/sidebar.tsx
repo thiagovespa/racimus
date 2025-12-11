@@ -4,10 +4,11 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useI18n } from "@/lib/i18n/context"
 import { cn } from "@/lib/utils"
-import { Home, PlusCircle, Grid3X3, BarChart3, Download, Menu, X, HelpCircle } from "lucide-react"
+import { Home, PlusCircle, Grid3X3, BarChart3, Download, Menu, X, HelpCircle, Moon, Sun } from "lucide-react"
 import { useState, useEffect } from "react"
 import { VespariumLogo } from "./vesparium-logo"
 import { RacimusLogo } from "./racimus-logo"
+import { useTheme } from "@/lib/theme/context"
 
 const navItems = [
   { href: "/", icon: Home, key: "home", tutorialId: "nav-home" },
@@ -25,6 +26,7 @@ interface SidebarProps {
 export function Sidebar({ onTutorialClick, forceOpen }: SidebarProps) {
   const pathname = usePathname()
   const { t } = useI18n()
+  const { theme, toggleTheme } = useTheme()
   const [isOpen, setIsOpen] = useState(false)
 
   useEffect(() => {
@@ -114,6 +116,19 @@ export function Sidebar({ onTutorialClick, forceOpen }: SidebarProps) {
           </nav>
 
           <div className="p-4 border-t border-border space-y-2">
+            <button
+              onClick={toggleTheme}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-card"
+              aria-label={theme === "dark" ? t.theme?.lightMode : t.theme?.darkMode}
+            >
+              {theme === "dark" ? (
+                <Sun className="h-5 w-5" aria-hidden="true" />
+              ) : (
+                <Moon className="h-5 w-5" aria-hidden="true" />
+              )}
+              {theme === "dark" ? t.theme?.lightMode || "Light Mode" : t.theme?.darkMode || "Dark Mode"}
+            </button>
+
             <button
               data-tutorial="tutorial-button"
               onClick={() => {

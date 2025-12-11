@@ -4,9 +4,30 @@ import jsPDF from "jspdf"
 const BRANDING = {
   software: "Racimus",
   company: "Vesparium",
-  website: "https://vesparium.com",
+  website: "https://racim.us",
   tagline: "Made with Racimus by Vesparium",
-  taglineUrl: "Racimus by Vesparium - vesparium.com",
+  taglineUrl: "racim.us",
+}
+
+export type ExportTheme = "light" | "dark"
+
+const THEME_COLORS = {
+  light: {
+    background: "#ffffff",
+    cardBg: "#f8f9fa",
+    text: "#1a1a1a",
+    textSecondary: "#666666",
+    border: "#e0e0e0",
+    headerBg: "#f0f0f0",
+  },
+  dark: {
+    background: "#1a1a1a",
+    cardBg: "#2a2a2a",
+    text: "#ffffff",
+    textSecondary: "#a0a0a0",
+    border: "#333333",
+    headerBg: "#333333",
+  },
 }
 
 export function exportMatrixAsCSV(matrix: Matrix): void {
@@ -43,7 +64,7 @@ export function exportMatrixAsCSV(matrix: Matrix): void {
   downloadFile(csvContent, `${matrix.title.replace(/\s+/g, "_")}_matrix.csv`, "text/csv")
 }
 
-export async function exportMatrixAsPNG(matrix: Matrix): Promise<void> {
+export async function exportMatrixAsPNG(matrix: Matrix, theme: ExportTheme = "dark"): Promise<void> {
   const canvas = document.createElement("canvas")
   const ctx = canvas.getContext("2d")
   if (!ctx) return
@@ -63,10 +84,10 @@ export async function exportMatrixAsPNG(matrix: Matrix): Promise<void> {
   canvas.height = height
 
   // Background
-  ctx.fillStyle = "#1a1a1a"
+  ctx.fillStyle = THEME_COLORS[theme].background
   ctx.fillRect(0, 0, width, height)
 
-  ctx.fillStyle = "#d4aa00"
+  ctx.fillStyle = THEME_COLORS[theme].textSecondary
   ctx.font = "bold 18px Inter, sans-serif"
   ctx.textAlign = "left"
   ctx.fillText(`RACI Matrix: ${matrix.title}`, padding + 10, padding + 22)
@@ -74,11 +95,11 @@ export async function exportMatrixAsPNG(matrix: Matrix): Promise<void> {
   const contentStartY = padding + titleHeight
 
   // Header background
-  ctx.fillStyle = "#333333"
+  ctx.fillStyle = THEME_COLORS[theme].headerBg
   ctx.fillRect(padding, contentStartY, width - padding * 2, headerHeight)
 
   // Draw header
-  ctx.fillStyle = "#d1d1d1"
+  ctx.fillStyle = THEME_COLORS[theme].textSecondary
   ctx.font = "bold 14px Inter, sans-serif"
   ctx.textAlign = "left"
   ctx.fillText("Tasks", padding + 10, contentStartY + 40)
@@ -87,10 +108,10 @@ export async function exportMatrixAsPNG(matrix: Matrix): Promise<void> {
   ctx.textAlign = "center"
   matrix.people.forEach((person, i) => {
     const x = padding + taskColWidth + i * cellWidth + cellWidth / 2
-    ctx.fillStyle = "#ffffff"
+    ctx.fillStyle = THEME_COLORS[theme].text
     ctx.font = "bold 12px Inter, sans-serif"
     ctx.fillText(person.name, x, contentStartY + 30)
-    ctx.fillStyle = "#d1d1d1"
+    ctx.fillStyle = THEME_COLORS[theme].textSecondary
     ctx.font = "11px Inter, sans-serif"
     ctx.fillText(person.role, x, contentStartY + 48)
   })
@@ -108,11 +129,11 @@ export async function exportMatrixAsPNG(matrix: Matrix): Promise<void> {
     const assignment = matrix.assignments.find((a) => a.taskId === task.id)
 
     // Row background
-    ctx.fillStyle = taskIdx % 2 === 0 ? "#262626" : "#1a1a1a"
+    ctx.fillStyle = taskIdx % 2 === 0 ? THEME_COLORS[theme].cardBg : THEME_COLORS[theme].background
     ctx.fillRect(padding, y, width - padding * 2, cellHeight)
 
     // Task name
-    ctx.fillStyle = "#ffffff"
+    ctx.fillStyle = THEME_COLORS[theme].text
     ctx.font = "13px Inter, sans-serif"
     ctx.textAlign = "left"
     ctx.fillText(task.name.substring(0, 25), padding + 10, y + 30)
@@ -134,7 +155,7 @@ export async function exportMatrixAsPNG(matrix: Matrix): Promise<void> {
         ctx.fill()
 
         // Draw letter
-        ctx.fillStyle = "#ffffff"
+        ctx.fillStyle = THEME_COLORS[theme].background
         ctx.font = "bold 14px Inter, sans-serif"
         ctx.textAlign = "center"
         ctx.textBaseline = "middle"
@@ -143,14 +164,14 @@ export async function exportMatrixAsPNG(matrix: Matrix): Promise<void> {
     })
   })
 
-  ctx.fillStyle = "#333333"
+  ctx.fillStyle = THEME_COLORS[theme].headerBg
   ctx.fillRect(0, height - footerHeight, width, footerHeight)
-  ctx.fillStyle = "#d4aa00"
+  ctx.fillStyle = THEME_COLORS[theme].textSecondary
   ctx.font = "bold 12px Inter, sans-serif"
   ctx.textAlign = "center"
   ctx.textBaseline = "top"
   ctx.fillText(BRANDING.tagline, width / 2, height - footerHeight + 10)
-  ctx.fillStyle = "#d1d1d1"
+  ctx.fillStyle = THEME_COLORS[theme].textSecondary
   ctx.font = "11px Inter, sans-serif"
   ctx.fillText(BRANDING.website, width / 2, height - footerHeight + 28)
 
@@ -159,7 +180,7 @@ export async function exportMatrixAsPNG(matrix: Matrix): Promise<void> {
   downloadDataUrl(dataUrl, `${matrix.title.replace(/\s+/g, "_")}_matrix.png`)
 }
 
-export async function exportDashboardAsPNG(matrix: Matrix): Promise<void> {
+export async function exportDashboardAsPNG(matrix: Matrix, theme: ExportTheme = "dark"): Promise<void> {
   const canvas = document.createElement("canvas")
   const ctx = canvas.getContext("2d")
   if (!ctx) return
@@ -175,11 +196,11 @@ export async function exportDashboardAsPNG(matrix: Matrix): Promise<void> {
   canvas.height = height
 
   // Background
-  ctx.fillStyle = "#1a1a1a"
+  ctx.fillStyle = THEME_COLORS[theme].background
   ctx.fillRect(0, 0, width, height)
 
   // Title
-  ctx.fillStyle = "#d4aa00"
+  ctx.fillStyle = THEME_COLORS[theme].textSecondary
   ctx.font = "bold 20px Inter, sans-serif"
   ctx.textAlign = "left"
   ctx.fillText(`Workload Dashboard: ${matrix.title}`, padding, padding + 25)
@@ -213,16 +234,16 @@ export async function exportDashboardAsPNG(matrix: Matrix): Promise<void> {
     const y = headerHeight + idx * personHeight + padding
 
     // Name and role
-    ctx.fillStyle = "#ffffff"
+    ctx.fillStyle = THEME_COLORS[theme].text
     ctx.font = "bold 14px Inter, sans-serif"
     ctx.textAlign = "left"
     ctx.fillText(person.name, padding, y + 20)
-    ctx.fillStyle = "#d1d1d1"
+    ctx.fillStyle = THEME_COLORS[theme].textSecondary
     ctx.font = "12px Inter, sans-serif"
     ctx.fillText(person.role, padding, y + 38)
 
     // Total
-    ctx.fillStyle = "#d1d1d1"
+    ctx.fillStyle = THEME_COLORS[theme].textSecondary
     ctx.font = "12px Inter, sans-serif"
     ctx.textAlign = "right"
     ctx.fillText(`Total: ${person.total}`, width - padding, y + 20)
@@ -248,7 +269,7 @@ export async function exportDashboardAsPNG(matrix: Matrix): Promise<void> {
 
         // Label
         if (segWidth > 25) {
-          ctx.fillStyle = "#ffffff"
+          ctx.fillStyle = THEME_COLORS[theme].background
           ctx.font = "bold 11px Inter, sans-serif"
           ctx.textAlign = "center"
           ctx.textBaseline = "middle"
@@ -261,7 +282,7 @@ export async function exportDashboardAsPNG(matrix: Matrix): Promise<void> {
 
     // Background for empty bar
     if (person.total === 0) {
-      ctx.fillStyle = "#333333"
+      ctx.fillStyle = THEME_COLORS[theme].headerBg
       ctx.fillRect(padding + 150, barY, barMaxWidth, barHeight)
     }
   })
@@ -275,19 +296,19 @@ export async function exportDashboardAsPNG(matrix: Matrix): Promise<void> {
     const colors = ["#ef4444", "#d4aa00", "#0ea5e9", "#22c55e"]
     ctx.fillStyle = colors[i]
     ctx.fillRect(legendX, legendY - 10, 12, 12)
-    ctx.fillStyle = "#d1d1d1"
+    ctx.fillStyle = THEME_COLORS[theme].textSecondary
     ctx.fillText(label, legendX + 18, legendY)
     legendX += 140
   })
 
-  ctx.fillStyle = "#333333"
+  ctx.fillStyle = THEME_COLORS[theme].headerBg
   ctx.fillRect(0, height - footerHeight, width, footerHeight)
-  ctx.fillStyle = "#d4aa00"
+  ctx.fillStyle = THEME_COLORS[theme].textSecondary
   ctx.font = "bold 12px Inter, sans-serif"
   ctx.textAlign = "center"
   ctx.textBaseline = "top"
   ctx.fillText(BRANDING.tagline, width / 2, height - footerHeight + 12)
-  ctx.fillStyle = "#d1d1d1"
+  ctx.fillStyle = THEME_COLORS[theme].textSecondary
   ctx.font = "11px Inter, sans-serif"
   ctx.fillText(BRANDING.website, width / 2, height - footerHeight + 32)
 
@@ -296,10 +317,10 @@ export async function exportDashboardAsPNG(matrix: Matrix): Promise<void> {
   downloadDataUrl(dataUrl, `${matrix.title.replace(/\s+/g, "_")}_dashboard.png`)
 }
 
-export async function exportReportAsPDF(matrix: Matrix): Promise<void> {
+export async function exportReportAsPDF(matrix: Matrix, theme: ExportTheme = "dark"): Promise<void> {
   // Generate matrix and dashboard images
-  const matrixCanvas = await generateMatrixCanvas(matrix)
-  const dashboardCanvas = await generateDashboardCanvas(matrix)
+  const matrixCanvas = await generateMatrixCanvas(matrix, theme)
+  const dashboardCanvas = await generateDashboardCanvas(matrix, theme)
 
   const matrixImage = matrixCanvas.toDataURL("image/png")
   const dashboardImage = dashboardCanvas.toDataURL("image/png")
@@ -492,7 +513,7 @@ function downloadDataUrl(dataUrl: string, filename: string): void {
   document.body.removeChild(a)
 }
 
-async function generateMatrixCanvas(matrix: Matrix): Promise<HTMLCanvasElement> {
+async function generateMatrixCanvas(matrix: Matrix, theme: ExportTheme = "dark"): Promise<HTMLCanvasElement> {
   const canvas = document.createElement("canvas")
   const ctx = canvas.getContext("2d")
   if (!ctx) throw new Error("Could not get canvas context")
@@ -511,10 +532,10 @@ async function generateMatrixCanvas(matrix: Matrix): Promise<HTMLCanvasElement> 
   canvas.height = height
 
   // Background
-  ctx.fillStyle = "#1a1a1a"
+  ctx.fillStyle = THEME_COLORS[theme].background
   ctx.fillRect(0, 0, width, height)
 
-  ctx.fillStyle = "#d4aa00"
+  ctx.fillStyle = THEME_COLORS[theme].textSecondary
   ctx.font = "bold 16px Inter, sans-serif"
   ctx.textAlign = "left"
   ctx.fillText(`RACI Matrix: ${matrix.title}`, padding + 10, padding + 20)
@@ -522,11 +543,11 @@ async function generateMatrixCanvas(matrix: Matrix): Promise<HTMLCanvasElement> 
   const contentStartY = padding + titleHeight
 
   // Header background
-  ctx.fillStyle = "#333333"
+  ctx.fillStyle = THEME_COLORS[theme].headerBg
   ctx.fillRect(padding, contentStartY, width - padding * 2, headerHeight)
 
   // Draw header
-  ctx.fillStyle = "#d1d1d1"
+  ctx.fillStyle = THEME_COLORS[theme].textSecondary
   ctx.font = "bold 12px Inter, sans-serif"
   ctx.textAlign = "left"
   ctx.fillText("Tasks", padding + 10, contentStartY + 35)
@@ -535,10 +556,10 @@ async function generateMatrixCanvas(matrix: Matrix): Promise<HTMLCanvasElement> 
   ctx.textAlign = "center"
   matrix.people.forEach((person, i) => {
     const x = padding + taskColWidth + i * cellWidth + cellWidth / 2
-    ctx.fillStyle = "#ffffff"
+    ctx.fillStyle = THEME_COLORS[theme].text
     ctx.font = "bold 10px Inter, sans-serif"
     ctx.fillText(person.name.substring(0, 12), x, contentStartY + 28)
-    ctx.fillStyle = "#d1d1d1"
+    ctx.fillStyle = THEME_COLORS[theme].textSecondary
     ctx.font = "9px Inter, sans-serif"
     ctx.fillText(person.role.substring(0, 12), x, contentStartY + 44)
   })
@@ -555,10 +576,10 @@ async function generateMatrixCanvas(matrix: Matrix): Promise<HTMLCanvasElement> 
     const y = contentStartY + headerHeight + taskIdx * cellHeight
     const assignment = matrix.assignments.find((a) => a.taskId === task.id)
 
-    ctx.fillStyle = taskIdx % 2 === 0 ? "#262626" : "#1a1a1a"
+    ctx.fillStyle = taskIdx % 2 === 0 ? THEME_COLORS[theme].cardBg : THEME_COLORS[theme].background
     ctx.fillRect(padding, y, width - padding * 2, cellHeight)
 
-    ctx.fillStyle = "#ffffff"
+    ctx.fillStyle = THEME_COLORS[theme].text
     ctx.font = "11px Inter, sans-serif"
     ctx.textAlign = "left"
     ctx.fillText(task.name.substring(0, 22), padding + 10, y + 25)
@@ -577,7 +598,7 @@ async function generateMatrixCanvas(matrix: Matrix): Promise<HTMLCanvasElement> 
         ctx.fillStyle = raciColors[value]
         ctx.fill()
 
-        ctx.fillStyle = "#ffffff"
+        ctx.fillStyle = THEME_COLORS[theme].background
         ctx.font = "bold 11px Inter, sans-serif"
         ctx.textAlign = "center"
         ctx.textBaseline = "middle"
@@ -589,7 +610,7 @@ async function generateMatrixCanvas(matrix: Matrix): Promise<HTMLCanvasElement> 
   return canvas
 }
 
-async function generateDashboardCanvas(matrix: Matrix): Promise<HTMLCanvasElement> {
+async function generateDashboardCanvas(matrix: Matrix, theme: ExportTheme = "dark"): Promise<HTMLCanvasElement> {
   const canvas = document.createElement("canvas")
   const ctx = canvas.getContext("2d")
   if (!ctx) throw new Error("Could not get canvas context")
@@ -605,11 +626,11 @@ async function generateDashboardCanvas(matrix: Matrix): Promise<HTMLCanvasElemen
   canvas.height = height
 
   // Background
-  ctx.fillStyle = "#1a1a1a"
+  ctx.fillStyle = THEME_COLORS[theme].background
   ctx.fillRect(0, 0, width, height)
 
   // Title
-  ctx.fillStyle = "#d4aa00"
+  ctx.fillStyle = THEME_COLORS[theme].textSecondary
   ctx.font = "bold 16px Inter, sans-serif"
   ctx.textAlign = "left"
   ctx.fillText(`Workload Dashboard: ${matrix.title}`, padding, padding + 20)
@@ -641,15 +662,15 @@ async function generateDashboardCanvas(matrix: Matrix): Promise<HTMLCanvasElemen
   stats.forEach((person, idx) => {
     const y = headerHeight + idx * personHeight + padding
 
-    ctx.fillStyle = "#ffffff"
+    ctx.fillStyle = THEME_COLORS[theme].text
     ctx.font = "bold 12px Inter, sans-serif"
     ctx.textAlign = "left"
     ctx.fillText(person.name, padding, y + 18)
-    ctx.fillStyle = "#d1d1d1"
+    ctx.fillStyle = THEME_COLORS[theme].textSecondary
     ctx.font = "10px Inter, sans-serif"
     ctx.fillText(person.role, padding, y + 34)
 
-    ctx.fillStyle = "#d1d1d1"
+    ctx.fillStyle = THEME_COLORS[theme].textSecondary
     ctx.font = "10px Inter, sans-serif"
     ctx.textAlign = "right"
     ctx.fillText(`Total: ${person.total}`, width - padding, y + 18)
@@ -673,7 +694,7 @@ async function generateDashboardCanvas(matrix: Matrix): Promise<HTMLCanvasElemen
         ctx.fillRect(barX, barY, segWidth, barHeight)
 
         if (segWidth > 20) {
-          ctx.fillStyle = "#ffffff"
+          ctx.fillStyle = THEME_COLORS[theme].background
           ctx.font = "bold 9px Inter, sans-serif"
           ctx.textAlign = "center"
           ctx.textBaseline = "middle"
@@ -685,7 +706,7 @@ async function generateDashboardCanvas(matrix: Matrix): Promise<HTMLCanvasElemen
     })
 
     if (person.total === 0) {
-      ctx.fillStyle = "#333333"
+      ctx.fillStyle = THEME_COLORS[theme].headerBg
       ctx.fillRect(padding + 130, barY, barMaxWidth, barHeight)
     }
   })
@@ -699,7 +720,7 @@ async function generateDashboardCanvas(matrix: Matrix): Promise<HTMLCanvasElemen
     const colors = ["#ef4444", "#d4aa00", "#0ea5e9", "#22c55e"]
     ctx.fillStyle = colors[i]
     ctx.fillRect(legendX, legendY - 10, 10, 10)
-    ctx.fillStyle = "#d1d1d1"
+    ctx.fillStyle = THEME_COLORS[theme].textSecondary
     ctx.fillText(label, legendX + 14, legendY)
     legendX += 130
   })

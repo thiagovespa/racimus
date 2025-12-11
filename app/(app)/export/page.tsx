@@ -4,27 +4,49 @@ import { useState } from "react"
 import { Header } from "@/components/header"
 import { useI18n } from "@/lib/i18n/context"
 import { useMatrix } from "@/lib/store/matrix-store"
+import { useTheme } from "@/lib/theme/context"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { FileSpreadsheet, ImageIcon, FileImage, FileText, Download, Check, FileJson, AlertCircle } from "lucide-react"
-import { exportMatrixAsCSV, exportMatrixAsPNG, exportDashboardAsPNG, exportReportAsPDF } from "@/lib/utils/export"
+import { Label } from "@/components/ui/label"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import {
+  FileSpreadsheet,
+  ImageIcon,
+  FileImage,
+  FileText,
+  Download,
+  Check,
+  FileJson,
+  AlertCircle,
+  Sun,
+  Moon,
+} from "lucide-react"
+import {
+  exportMatrixAsCSV,
+  exportMatrixAsPNG,
+  exportDashboardAsPNG,
+  exportReportAsPDF,
+  type ExportTheme,
+} from "@/lib/utils/export"
 
 const exportOptions = [
-  { id: "json", icon: FileJson, key: "matrixJSON", descKey: "matrixJSONDesc" },
-  { id: "csv", icon: FileSpreadsheet, key: "matrixCSV", descKey: "matrixCSVDesc" },
-  { id: "png", icon: ImageIcon, key: "matrixPNG", descKey: "matrixPNGDesc" },
-  { id: "dashboard", icon: FileImage, key: "dashboardPNG", descKey: "dashboardPNGDesc" },
-  { id: "pdf", icon: FileText, key: "fullReport", descKey: "fullReportDesc" },
+  { id: "json", icon: FileJson, key: "matrixJSON", descKey: "matrixJSONDesc", hasTheme: false },
+  { id: "csv", icon: FileSpreadsheet, key: "matrixCSV", descKey: "matrixCSVDesc", hasTheme: false },
+  { id: "png", icon: ImageIcon, key: "matrixPNG", descKey: "matrixPNGDesc", hasTheme: true },
+  { id: "dashboard", icon: FileImage, key: "dashboardPNG", descKey: "dashboardPNGDesc", hasTheme: true },
+  { id: "pdf", icon: FileText, key: "fullReport", descKey: "fullReportDesc", hasTheme: true },
 ] as const
 
 export default function ExportPage() {
   const { t } = useI18n()
   const { currentMatrix } = useMatrix()
+  const { theme: siteTheme } = useTheme()
   const [exporting, setExporting] = useState<string | null>(null)
   const [showModal, setShowModal] = useState(false)
   const [exportType, setExportType] = useState("")
   const [exportError, setExportError] = useState<string | null>(null)
+  const [exportTheme, setExportTheme] = useState<ExportTheme>(siteTheme)
 
   const handleExport = async (id: string) => {
     if (!currentMatrix) return
@@ -59,13 +81,13 @@ export default function ExportPage() {
           exportMatrixAsCSV(currentMatrix)
           break
         case "png":
-          await exportMatrixAsPNG(currentMatrix)
+          await exportMatrixAsPNG(currentMatrix, exportTheme)
           break
         case "dashboard":
-          await exportDashboardAsPNG(currentMatrix)
+          await exportDashboardAsPNG(currentMatrix, exportTheme)
           break
         case "pdf":
-          await exportReportAsPDF(currentMatrix)
+          await exportReportAsPDF(currentMatrix, exportTheme)
           break
       }
 
@@ -92,6 +114,37 @@ export default function ExportPage() {
           </CardContent>
         </Card>
       )}
+
+      <Card className="mb-6 bg-card border-border">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm text-foreground">{t.export?.exportTheme || "Export Theme"}</CardTitle>
+          <CardDescription className="text-xs text-muted-foreground">
+            {t.export?.exportThemeDesc || "Select the theme for image and PDF exports"}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <RadioGroup
+            value={exportTheme}
+            onValueChange={(value) => setExportTheme(value as ExportTheme)}
+            className="flex gap-4"
+          >
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="dark" id="theme-dark" />
+              <Label htmlFor="theme-dark" className="flex items-center gap-2 cursor-pointer">
+                <Moon className="h-4 w-4" />
+                {t.theme?.darkMode || "Dark"}
+              </Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="light" id="theme-light" />
+              <Label htmlFor="theme-light" className="flex items-center gap-2 cursor-pointer">
+                <Sun className="h-4 w-4" />
+                {t.theme?.lightMode || "Light"}
+              </Label>
+            </div>
+          </RadioGroup>
+        </CardContent>
+      </Card>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {exportOptions.map((option) => {
