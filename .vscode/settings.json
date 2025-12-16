@@ -1,0 +1,3 @@
+{
+  "conventionalCommits.scopes": ["auth", "matrix", "export", "admin", "ui", "i18n", "theme", "db", "api"]
+}

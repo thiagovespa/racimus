@@ -1,30 +1,94 @@
-# Racimus web interface
+# Racimus
 
-*Automatically synced with your [v0.app](https://v0.app) deployments*
+**Sistema de Gestão de Matrizes RACI**
 
 [![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/thiagovespas-projects/racimus)
-[![Built with v0](https://img.shields.io/badge/Built%20with-v0.app-black?style=for-the-badge)](https://v0.app/chat/iT8lIPwrbRU)
 
-## Overview
+## 🐝 Sobre o Projeto
 
-This repository will stay in sync with your deployed chats on [v0.app](https://v0.app).
-Any changes you make to your deployed app will be automatically pushed to this repository from [v0.app](https://v0.app).
+Racimus é uma aplicação web desenvolvida pela **Vesparium** para criar, gerenciar e visualizar Matrizes RACI (Responsável, Aprovador, Consultado, Informado). A ferramenta facilita a definição clara de papéis e responsabilidades em projetos e processos.
 
-## Deployment
+### Funcionalidades Principais
 
-Your project is live at:
+- ✨ Criação interativa de matrizes RACI com wizard guiado
+- 🎯 Múltiplas atribuições por pessoa (ex: Consultado + Informado)
+- 📊 Painel de carga de trabalho com visualizações gráficas
+- 📤 Exportação em PNG, PDF, Excel e JSON
+- 🌍 Suporte multilíngue (Português, Inglês, Espanhol)
+- 🎨 Modo claro e escuro
+- 📱 Interface responsiva e mobile-friendly
+- 🎬 Modo de apresentação profissional
+- 💾 Armazenamento local no navegador
 
-**[https://vercel.com/thiagovespas-projects/racimus](https://vercel.com/thiagovespas-projects/racimus)**
+## 🚀 Tecnologias
 
-## Build your app
+- **Next.js 16** - Framework React com App Router
+- **TypeScript** - Tipagem estática
+- **Tailwind CSS v4** - Estilização utility-first
+- **Supabase** - Banco de dados PostgreSQL e autenticação
+- **Recharts** - Visualizações de dados
+- **shadcn/ui** - Componentes UI acessíveis
 
-Continue building your app on:
+## 🛠️ Desenvolvimento
 
-**[https://v0.app/chat/iT8lIPwrbRU](https://v0.app/chat/iT8lIPwrbRU)**
+### Instalação
 
-## How It Works
+```bash
+npm install
+```
 
-1. Create and modify your project using [v0.app](https://v0.app)
-2. Deploy your chats from the v0 interface
-3. Changes are automatically pushed to this repository
-4. Vercel deploys the latest version from this repository
+### Executar localmente
+
+```bash
+npm run dev
+```
+
+Acesse [http://localhost:3000](http://localhost:3000) no navegador.
+
+### Build para produção
+
+```bash
+npm run build
+npm start
+```
+
+## 📝 Conventional Commits
+
+Este projeto usa [Conventional Commits](https://www.conventionalcommits.org/) para mensagens de commit padronizadas. Veja [CONTRIBUTING.md](./CONTRIBUTING.md) para detalhes sobre:
+
+- Tipos de commit (feat, fix, docs, etc.)
+- Escopos disponíveis
+- Como criar releases com notes automáticas
+
+### Exemplo
+
+```bash
+feat(matrix): permitir múltiplas atribuições RACI por pessoa
+fix(export): corrigir URL do branding para racim.us
+docs: adicionar guia de conventional commits
+```
+
+## 🔄 Releases
+
+Para criar uma nova release:
+
+```bash
+git tag -a v1.0.0 -m "Release 1.0.0"
+git push origin v1.0.0
+```
+
+O GitHub Actions irá automaticamente gerar as release notes categorizadas.
+
+## 🌐 Deploy
+
+O projeto está hospedado na Vercel:
+
+**[https://racim.us](https://racim.us)**
+
+## 📄 Licença
+
+© 2025 Vesparium. Todos os direitos reservados.
+
+## 🤝 Contato
+
+Desenvolvido por [Vesparium](https://racim.us)
