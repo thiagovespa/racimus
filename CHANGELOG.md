@@ -1,3 +1,10 @@
+## v1.2.0 - 2025-12-16
+
+### ✨ Features
+
+- Add GitHub Actions workflow for automated releases ()
+
+
 ## v1.1.0 - 2025-12-16
 
 ### ✨ Features
