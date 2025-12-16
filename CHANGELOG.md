@@ -1,3 +1,10 @@
+## v1.3.2 - 2025-12-16
+
+### 🐛 Bug Fixes
+
+- Fix paths for changelog and release notes in workflow ()
+
+
 ## v1.3.1 - 2025-12-16
 
 ### 🐛 Bug Fixes
