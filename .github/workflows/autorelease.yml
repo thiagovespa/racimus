@@ -230,15 +230,68 @@ jobs:
           fi
           
           # Save changelog to file
-          echo -e "$CHANGELOG" > /tmp/new_changelog.md
+          echo -e "$CHANGELOG" > new_changelog.md
           
           # Prepend to CHANGELOG.md
           if [ -f CHANGELOG.md ]; then
-            cat CHANGELOG.md >> /tmp/new_changelog.md
+            cat CHANGELOG.md >> new_changelog.md
           fi
-          mv /tmp/new_changelog.md CHANGELOG.md
+          mv new_changelog.md CHANGELOG.md
           
-          echo "Generated changelog for $NEW_VERSION"
+          # Save release notes for GitHub (without version header)
+          RELEASE_NOTES="## What's Changed\n\n"
+          
+          if [ -n "$BREAKING" ]; then
+            RELEASE_NOTES="${RELEASE_NOTES}### ⚠️ BREAKING CHANGES\n\n${BREAKING}\n"
+          fi
+          
+          if [ -n "$FEATURES" ]; then
+            RELEASE_NOTES="${RELEASE_NOTES}### ✨ Features\n\n${FEATURES}\n"
+          fi
+          
+          if [ -n "$FIXES" ]; then
+            RELEASE_NOTES="${RELEASE_NOTES}### 🐛 Bug Fixes\n\n${FIXES}\n"
+          fi
+          
+          if [ -n "$DOCS" ]; then
+            RELEASE_NOTES="${RELEASE_NOTES}### 📝 Documentation\n\n${DOCS}\n"
+          fi
+          
+          if [ -n "$STYLE" ]; then
+            RELEASE_NOTES="${RELEASE_NOTES}### 💄 Styles\n\n${STYLE}\n"
+          fi
+          
+          if [ -n "$REFACTOR" ]; then
+            RELEASE_NOTES="${RELEASE_NOTES}### ♻️ Code Refactoring\n\n${REFACTOR}\n"
+          fi
+          
+          if [ -n "$PERF" ]; then
+            RELEASE_NOTES="${RELEASE_NOTES}### ⚡ Performance Improvements\n\n${PERF}\n"
+          fi
+          
+          if [ -n "$TEST" ]; then
+            RELEASE_NOTES="${RELEASE_NOTES}### ✅ Tests\n\n${TEST}\n"
+          fi
+          
+          if [ -n "$BUILD" ]; then
+            RELEASE_NOTES="${RELEASE_NOTES}### 🔧 Build System\n\n${BUILD}\n"
+          fi
+          
+          if [ -n "$CI" ]; then
+            RELEASE_NOTES="${RELEASE_NOTES}### 👷 CI/CD\n\n${CI}\n"
+          fi
+          
+          if [ -n "$CHORE" ]; then
+            RELEASE_NOTES="${RELEASE_NOTES}### 🔨 Chores\n\n${CHORE}\n"
+          fi
+          
+          if [ -n "$OTHER" ]; then
+            RELEASE_NOTES="${RELEASE_NOTES}### Other Changes\n\n${OTHER}\n"
+          fi
+          
+          echo -e "$RELEASE_NOTES" > release_notes.md
+          
+          echo "Generated changelog and release notes for $NEW_VERSION"
 
       - name: Commit changes
         if: steps.analyze.outputs.bump != 'none'
@@ -265,7 +318,7 @@ jobs:
         with:
           tag_name: ${{ steps.new_version.outputs.new_version }}
           release_name: ${{ steps.new_version.outputs.new_version }}
-          body_path: /tmp/release_notes.md
+          body_path: release_notes.md
           draft: false
           prerelease: false
 
