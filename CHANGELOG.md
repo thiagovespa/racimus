@@ -1,3 +1,10 @@
+## v1.3.1 - 2025-12-16
+
+### 🐛 Bug Fixes
+
+- correct release notes generation in autorelease workflow ()
+
+
 ## v1.2.0 - 2025-12-16
 
 ### ✨ Features
