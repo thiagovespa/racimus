@@ -1,3 +1,17 @@
+## v1.1.0 - 2025-12-16
+
+### ✨ Features
+
+- add automatic versioning with GitHub Actions ()
+- add automatic versioning with conventional commits ()
+- add GitHub setup guide for auto-release workflow ()
+- Add auto release workflow for GitHub ()
+
+### ♻️ Code Refactoring
+
+- recreate.github/workflows files ()
+
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
