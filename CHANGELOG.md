@@ -1,3 +1,10 @@
+## v1.3.0 - 2025-12-16
+
+### ✨ Features
+
+- sync and initialize project from main branch ()
+
+
 ## v1.2.0 - 2025-12-16
 
 ### ✨ Features
