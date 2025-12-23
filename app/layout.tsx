@@ -15,7 +15,7 @@ const _robotoMono = V0_Font_Roboto_Mono({ subsets: ['latin'], weight: ["100","20
 const _notoSerif = V0_Font_Noto_Serif({ subsets: ['latin'], weight: ["100","200","300","400","500","600","700","800","900"] })
 
 const inter = Inter({ subsets: ["latin"] })
-const _jetbrainsMono = JetBrains_Mono({ subsets: ["latin"] })
+const jetbrainsMono = JetBrains_Mono({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "Racimus - RACI Matrix Management | Vesparium",
